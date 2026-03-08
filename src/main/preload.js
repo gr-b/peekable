@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('peekable', {
   saveOnboarding: (config) => ipcRenderer.invoke('save-onboarding', config),
   saveSettings: (config) => ipcRenderer.invoke('save-settings', config),
   getConfig: () => ipcRenderer.invoke('get-config'),
+  startMonitoring: () => ipcRenderer.invoke('start-monitoring'),
+  hideWindow: () => ipcRenderer.invoke('hide-window'),
   restartApp: () => ipcRenderer.invoke('restart-app'),
   onShowPasswordPrompt: (callback) => ipcRenderer.on('show-password-prompt', callback),
   __testCompleteOnboarding: (data) => ipcRenderer.invoke('test-complete-onboarding', data)
