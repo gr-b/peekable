@@ -11,6 +11,70 @@ Peekable is a desktop app that parents install on their child's computer. It per
 3. **Email Alerts** — When harmful content is detected, emails the parent with a description and the screenshot attached
 4. **Cooldown** — Won't send repeat alerts within a configurable window (default 15 minutes)
 
+## App Walkthrough
+
+### Step 1: Parent Account Setup
+
+Set your email address and a password. You'll need the password to reconfigure settings later.
+
+![Welcome screen](screenshots/01-welcome.png)
+
+![Account filled in](screenshots/02-account-filled.png)
+
+Form validation catches mismatched passwords and invalid emails:
+
+![Validation error](screenshots/03-validation-error.png)
+
+### Step 2: Screen Recording Permission
+
+Peekable guides you through granting macOS Screen Recording permission, with a live status check.
+
+![Screen permission](screenshots/04-screen-permission.png)
+
+![Permission granted](screenshots/05-permission-status.png)
+
+### Step 3: Alert Categories
+
+Toggle which categories of harmful content you want to be alerted about. Six categories are enabled by default.
+
+![Categories](screenshots/06-categories.png)
+
+Enable additional categories and configure custom rules. Political Content lets you describe your specific concern, and Custom Rule lets you define anything.
+
+![Categories configured (bottom)](screenshots/07-categories-configured.png)
+
+![Categories configured (top)](screenshots/08-categories-top.png)
+
+### Step 4: Sensitivity Settings
+
+Configure how often screenshots are taken, the cooldown between alerts, and the AI confidence threshold.
+
+![Default sensitivity settings](screenshots/09-sensitivity-defaults.png)
+
+![Configured sensitivity settings](screenshots/10-sensitivity-configured.png)
+
+### Step 5: Summary & Start
+
+Review all your settings, then start monitoring. The window closes and Peekable runs silently in the system tray.
+
+![Summary](screenshots/11-summary.png)
+
+### Returning to Settings
+
+When the parent comes back to reconfigure, they're greeted with a password prompt.
+
+![Password prompt](screenshots/12-password-prompt.png)
+
+Wrong passwords are rejected:
+
+![Wrong password](screenshots/13-wrong-password.png)
+
+After entering the correct password, the full settings panel is accessible:
+
+![Settings panel](screenshots/14-settings-panel.png)
+
+![Settings panel (bottom)](screenshots/15-settings-panel-bottom.png)
+
 ## Alert Categories
 
 | Category | Description |
