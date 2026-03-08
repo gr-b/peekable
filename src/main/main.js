@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Menu, screen } = require('electron');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
@@ -11,10 +11,16 @@ const isTest = process.env.NODE_ENV === 'test';
 let mainWindow = null;
 
 function createWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
   mainWindow = new BrowserWindow({
-    width: 700,
-    height: 750,
-    resizable: false,
+    width: screenWidth,
+    height: screenHeight,
+    minWidth: 380,
+    minHeight: 520,
+    resizable: true,
+    maximizable: true,
+    fullscreenable: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -27,6 +33,8 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
   mainWindow.once('ready-to-show', () => {
+    // Open maximized so the window uses the full available work area
+    mainWindow.maximize();
     mainWindow.show();
   });
 
@@ -53,6 +61,11 @@ function showSettings() {
 }
 
 app.on('ready', () => {
+  // Hide the in-window menu bar on Windows so the UI matches macOS
+  if (process.platform === 'win32') {
+    Menu.setApplicationMenu(null);
+  }
+
   createWindow();
   if (!isTest) {
     createTray(showSettings);
@@ -67,13 +80,13 @@ app.on('ready', () => {
     });
   }
 
-  // Start monitoring if onboarding already complete
-  if (store.get('onboardingComplete')) {
+  // Start monitoring and show password prompt automatically
+  // ONLY in production once onboarding is complete.
+  if (process.env.NODE_ENV === 'production' && store.get('onboardingComplete')) {
     if (!isTest) {
       startMonitoring();
       mainWindow.hide();
     }
-    // Show password prompt when they reopen
     mainWindow.webContents.on('did-finish-load', () => {
       mainWindow.webContents.send('show-password-prompt');
     });
@@ -127,17 +140,27 @@ ipcMain.handle('save-onboarding', (event, config) => {
   store.set('alertCooldownMinutes', config.alertCooldownMinutes);
   store.set('confidenceThreshold', config.confidenceThreshold);
   store.set('onboardingComplete', true);
-  if (!isTest) {
+  const skipStartMonitoring = config.skipStartMonitoring === true;
+  if (!isTest && !skipStartMonitoring) {
     startMonitoring();
   }
   return true;
+});
+
+ipcMain.handle('start-monitoring', () => {
+  if (!isTest) startMonitoring();
+  return true;
+});
+
+ipcMain.handle('hide-window', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
 });
 
 ipcMain.handle('save-settings', (event, config) => {
   if (config.email) store.set('parentEmail', config.email);
   if (config.categories) store.set('categories', config.categories);
   if (config.screenshotIntervalSeconds) store.set('screenshotIntervalSeconds', config.screenshotIntervalSeconds);
-  if (config.alertCooldownMinutes) store.set('alertCooldownMinutes', config.alertCooldownMinutes);
+  if (config.alertCooldownMinutes != null) store.set('alertCooldownMinutes', config.alertCooldownMinutes);
   if (config.confidenceThreshold) store.set('confidenceThreshold', config.confidenceThreshold);
   if (config.newPassword) setPassword(config.newPassword);
   if (!isTest) {
@@ -147,13 +170,15 @@ ipcMain.handle('save-settings', (event, config) => {
 });
 
 ipcMain.handle('get-config', () => {
+  const onboardingComplete = store.get('onboardingComplete');
   return {
     parentEmail: store.get('parentEmail'),
     categories: store.get('categories'),
     screenshotIntervalSeconds: store.get('screenshotIntervalSeconds'),
     alertCooldownMinutes: store.get('alertCooldownMinutes'),
     confidenceThreshold: store.get('confidenceThreshold'),
-    onboardingComplete: store.get('onboardingComplete')
+    // In development we always show the full onboarding / welcome flow
+    onboardingComplete: process.env.NODE_ENV === 'production' ? onboardingComplete : false
   };
 });
 

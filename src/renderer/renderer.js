@@ -30,7 +30,9 @@ function renderCategories(containerId, categories) {
 
   for (const [key, cat] of Object.entries(categories)) {
     const item = document.createElement('div');
-    item.className = 'category-item';
+    const hasExtra = key === 'adultContent' || key === 'politicalContent' || key === 'custom';
+    item.className = 'category-item' + (hasExtra ? ' category-item--wide' : '');
+    item.dataset.key = key;
 
     let extraHTML = '';
     if (key === 'adultContent') {
@@ -99,7 +101,24 @@ function showStep(stepId) {
   document.getElementById(stepId).style.display = 'block';
 }
 
-// ---- Step 1: Account Setup ----
+// ---- Welcome ----
+
+document.getElementById('welcome-create-account').addEventListener('click', () => {
+  showStep('create-account-step');
+});
+
+document.getElementById('welcome-sign-in').addEventListener('click', () => {
+  showStep('login-step');
+});
+
+// ---- Create account (back link) ----
+
+document.getElementById('create-account-back').addEventListener('click', (e) => {
+  e.preventDefault();
+  showStep('welcome-step');
+});
+
+// ---- Create account: submit ----
 
 document.getElementById('step1-next').addEventListener('click', () => {
   const email = document.getElementById('parent-email').value.trim();
@@ -127,6 +146,38 @@ document.getElementById('step1-next').addEventListener('click', () => {
   onboardingData.email = email;
   onboardingData.password = password;
   showStep('step-2');
+});
+
+// ---- Login ----
+
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  errorEl.style.display = 'none';
+
+  if (!password) {
+    errorEl.textContent = 'Please enter your password.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const valid = await window.peekable.verifyPassword(password);
+  if (valid) {
+    await loadSettings();
+    showStep('settings-panel');
+  } else {
+    errorEl.textContent = 'Incorrect password. Try again or create an account.';
+    errorEl.style.display = 'block';
+  }
+});
+
+document.getElementById('login-create-account-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  showStep('create-account-step');
+});
+
+document.getElementById('login-password').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('login-btn').click();
 });
 
 // ---- Step 2: Screen Permission ----
@@ -185,7 +236,7 @@ document.getElementById('step4-next').addEventListener('click', () => {
     <p><strong>Email:</strong> ${onboardingData.email}</p>
     <p><strong>Monitoring:</strong> ${enabledCats.join(', ') || 'None'}</p>
     <p><strong>Screenshot interval:</strong> Every ${onboardingData.screenshotIntervalSeconds} seconds</p>
-    <p><strong>Alert cooldown:</strong> ${onboardingData.alertCooldownMinutes} minutes</p>
+    <p><strong>Alert cooldown:</strong> ${onboardingData.alertCooldownMinutes === 0 ? 'No cooldown' : onboardingData.alertCooldownMinutes + ' minutes'}</p>
     <p><strong>Confidence threshold:</strong> ${onboardingData.confidenceThreshold}</p>
   `;
   showStep('step-5');
@@ -259,6 +310,6 @@ window.peekable.onShowPasswordPrompt(() => {
   if (config.onboardingComplete) {
     showStep('password-prompt');
   } else {
-    showStep('step-1');
+    showStep('welcome-step');
   }
 })();

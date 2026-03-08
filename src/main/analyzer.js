@@ -1,13 +1,19 @@
-const OpenAI = require('openai');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const OpenAI = require('openai');
+
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) return null;
+  return new OpenAI({ apiKey });
+}
 
 function buildPrompt(categories) {
   const enabledCategories = Object.entries(categories)
     .filter(([, config]) => config.enabled)
     .map(([key, config]) => {
-      let desc = `- ${config.label}: ${config.description}`;
+      let desc = `- ${key} (${config.label}): ${config.description}`;
       if (key === 'adultContent' && config.sensitivity) {
         desc += ` (sensitivity: ${config.sensitivity})`;
       }
@@ -29,7 +35,7 @@ ${enabledCategories.join('\n')}
 Respond with ONLY valid JSON in this exact format:
 {
   "triggered": true/false,
-  "category": "category key if triggered, null otherwise",
+  "category": "exact category key from list above (e.g. strangerInteraction, adultContent) if triggered, null otherwise",
   "categoryLabel": "human readable category name if triggered, null otherwise",
   "confidence": "low", "medium", or "high",
   "description": "Brief 1-2 sentence description of what you see on screen that triggered the alert. Be specific but concise."
@@ -39,9 +45,15 @@ If nothing concerning is detected, set triggered to false. Only trigger if you h
 }
 
 async function analyzeScreenshot(screenshotBuffer, categories) {
+  const openai = getOpenAIClient();
+  if (!openai) {
+    console.warn('OPENAI_API_KEY not set; skipping AI analysis.');
+    return { triggered: false };
+  }
+
   const base64Image = screenshotBuffer.toString('base64');
   const prompt = buildPrompt(categories);
-
+  console.log("analyzing screenshot")
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
@@ -63,8 +75,8 @@ async function analyzeScreenshot(screenshotBuffer, categories) {
       max_tokens: 300,
       temperature: 0.1
     });
-
     const text = response.choices[0].message.content.trim();
+    console.log({text})
     // Extract JSON from response (handle markdown code blocks)
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {

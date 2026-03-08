@@ -20,25 +20,55 @@
       <button id="unlock-btn" class="btn-primary">Unlock</button>
     </div>
 
-    <!-- Step 1: Account Setup -->
-    <div id="step-1" class="step">
-      <h1>Welcome to Peekable</h1>
-      <p>Protect your child from harmful online content. Let's set up your parent account.</p>
+    <!-- Welcome (Apple-style hero) -->
+    <div id="welcome-step" class="step step-welcome" style="display:none;">
+      <div class="welcome-brand">
+        <h1 class="welcome-title">Peekable</h1>
+        <p class="welcome-tagline">The best place to keep your child safer online.</p>
+      </div>
+      <div class="welcome-actions">
+        <button id="welcome-create-account" class="btn-primary btn-large">Create account</button>
+        <button id="welcome-sign-in" class="btn-secondary btn-large">Sign in</button>
+      </div>
+    </div>
+
+    <!-- Create account -->
+    <div id="create-account-step" class="step" style="display:none;">
+      <h1>Create your account</h1>
+      <p>Protect your child from harmful online content. Set up your parent account.</p>
       <div class="form-group">
-        <label for="parent-email">Your Email Address</label>
+        <label for="parent-email">Email or phone number</label>
         <input type="email" id="parent-email" placeholder="parent@example.com" />
       </div>
       <div class="form-group">
-        <label for="parent-password">Set a Password</label>
+        <label for="parent-password">Password</label>
         <input type="password" id="parent-password" placeholder="Password" />
         <small>You'll need this to change settings later</small>
       </div>
       <div class="form-group">
-        <label for="parent-password-confirm">Confirm Password</label>
+        <label for="parent-password-confirm">Confirm password</label>
         <input type="password" id="parent-password-confirm" placeholder="Confirm password" />
         <p id="password-error" class="error" style="display:none;"></p>
       </div>
-      <button id="step1-next" class="btn-primary">Next</button>
+      <button id="step1-next" class="btn-primary">Continue</button>
+      <p class="step-footer"><a href="#" id="create-account-back" class="link-arrow link-arrow-back">Back</a></p>
+    </div>
+
+    <!-- Login -->
+    <div id="login-step" class="step" style="display:none;">
+      <h1>Sign in to Peekable</h1>
+      <p>Enter your parent account details.</p>
+      <div class="form-group">
+        <label for="login-email">Email or phone number</label>
+        <input type="email" id="login-email" placeholder="parent@example.com" />
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Password" />
+        <p id="login-error" class="error" style="display:none;"></p>
+      </div>
+      <button id="login-btn" class="btn-primary">Sign in</button>
+      <p class="step-footer"><a href="#" id="login-create-account-link" class="link-arrow">Don't have an account? Create your account</a></p>
     </div>
 
     <!-- Step 2: Screen Permission -->
@@ -89,6 +119,7 @@
       <div class="form-group">
         <label>Alert Cooldown</label>
         <select id="alert-cooldown">
+          <option value="0">No cooldown</option>
           <option value="5">5 minutes</option>
           <option value="15" selected>15 minutes</option>
           <option value="30">30 minutes</option>
@@ -135,6 +166,7 @@
       <div class="form-group">
         <label>Alert Cooldown</label>
         <select id="settings-alert-cooldown">
+          <option value="0">No cooldown</option>
           <option value="5">5 minutes</option>
           <option value="15">15 minutes</option>
           <option value="30">30 minutes</option>
